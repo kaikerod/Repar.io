@@ -90,7 +90,9 @@ export default function Home() {
   };
 
   const handleOpenNewOrderWithDate = (d?: Date | null) => {
-    setNewModalDefaultDate(d || selectedDate || new Date());
+    const targetDate = d || selectedDate || new Date();
+    setSelectedDate(targetDate);
+    setNewModalDefaultDate(targetDate);
     setIsNewModalOpen(true);
   };
 

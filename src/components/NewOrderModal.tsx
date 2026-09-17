@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   X,
   Calendar,
@@ -48,6 +48,23 @@ export function NewOrderModal({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const defaultDateTimestamp = defaultDate ? defaultDate.getTime() : null;
+
+  // Sync date and reset form when modal opens or defaultDate changes
+  useEffect(() => {
+    if (isOpen) {
+      const targetDate = defaultDate || new Date();
+      setDate(format(targetDate, "yyyy-MM-dd"));
+      setTime(format(new Date(), "HH:mm"));
+      setCustomerName("");
+      setDevice("");
+      setIssue("");
+      setEstimatedDuration("60");
+      setNotes("");
+      setError(null);
+    }
+  }, [isOpen, defaultDateTimestamp]);
 
   // Overlap detection
   const conflictingOrders = useMemo(() => {

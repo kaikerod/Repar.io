@@ -296,10 +296,11 @@ export function CalendarView({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        setSelectedDay(day);
                         onOpenNewOrderForDate(day);
                       }}
                       title="Agendar neste dia"
-                      className="p-1 rounded bg-slate-100 hover:bg-indigo-600 hover:text-white text-slate-600 transition-colors"
+                      className="p-1 rounded bg-slate-100 hover:bg-indigo-600 hover:text-white text-slate-600 transition-colors cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
