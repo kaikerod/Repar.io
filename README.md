@@ -30,7 +30,6 @@ Aplicativo pessoal para técnicos de assistência técnica acompanharem seus **r
   - Alternância rápida com 1 clique:
     - 🔵 `Agendado`
     - 🟡 `Na Bancada` (em teste / manutenção)
-    - 🟣 `Aguardando Peça`
     - 🟢 `Concluído` (pronto para retirada)
     - ⚪ `Entregue`
     - 🔴 `Cancelado`

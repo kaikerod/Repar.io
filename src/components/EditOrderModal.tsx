@@ -179,7 +179,6 @@ export function EditOrderModal({
               >
                 <option value="AGENDADO">Agendado</option>
                 <option value="NA_BANCADA">Na Bancada (Em análise/reparo)</option>
-                <option value="AGUARDANDO_PECA">Aguardando Peça</option>
                 <option value="CONCLUIDO">Concluído (Pronto para retirada)</option>
                 <option value="ENTREGUE">Entregue ao Cliente</option>
                 <option value="CANCELADO">Cancelado</option>

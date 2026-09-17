@@ -114,7 +114,6 @@ export function OrderCard({
             >
               <option value="AGENDADO">Agendado</option>
               <option value="NA_BANCADA">Na Bancada</option>
-              <option value="AGUARDANDO_PECA">Aguardando Peça</option>
               <option value="CONCLUIDO">Concluído</option>
               <option value="ENTREGUE">Entregue</option>
               <option value="CANCELADO">Cancelado</option>

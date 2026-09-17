@@ -123,13 +123,6 @@ export const STATUS_CONFIG: Record<
     border: "border-amber-200",
     dot: "bg-amber-500",
   },
-  AGUARDANDO_PECA: {
-    label: "Aguardando Peça",
-    bg: "bg-purple-50",
-    text: "text-purple-700",
-    border: "border-purple-200",
-    dot: "bg-purple-500",
-  },
   CONCLUIDO: {
     label: "Concluído",
     bg: "bg-emerald-50",

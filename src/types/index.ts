@@ -1,7 +1,6 @@
 export type OrderStatus =
   | "AGENDADO"
   | "NA_BANCADA"
-  | "AGUARDANDO_PECA"
   | "CONCLUIDO"
   | "ENTREGUE"
   | "CANCELADO";

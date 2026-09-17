@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, Cpu, Clock, CheckCircle2, Layers } from "lucide-react";
+import { Calendar, Cpu, CheckCircle2, Layers } from "lucide-react";
 import { WorkOrder, OrderStatus } from "@/types";
 
 interface MetricsBarProps {
@@ -15,7 +15,6 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter }: MetricsBarP
     total: orders.length,
     agendado: orders.filter((o) => o.status === "AGENDADO").length,
     naBancada: orders.filter((o) => o.status === "NA_BANCADA").length,
-    aguardandoPeca: orders.filter((o) => o.status === "AGUARDANDO_PECA").length,
     concluido: orders.filter((o) => o.status === "CONCLUIDO" || o.status === "ENTREGUE").length,
   };
 
@@ -45,14 +44,6 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter }: MetricsBarP
       activeColor: "ring-2 ring-amber-500 bg-amber-50",
     },
     {
-      id: "AGUARDANDO_PECA" as OrderStatus,
-      label: "Aguardando Peça",
-      count: countByStatus.aguardandoPeca,
-      icon: Clock,
-      color: "text-purple-700 bg-purple-50 border-purple-200",
-      activeColor: "ring-2 ring-purple-600 bg-purple-50",
-    },
-    {
       id: "CONCLUIDO" as OrderStatus,
       label: "Concluídos",
       count: countByStatus.concluido,
@@ -63,7 +54,7 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter }: MetricsBarP
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {metrics.map((item) => {
         const Icon = item.icon;
         const isActive = activeFilter === item.id;
