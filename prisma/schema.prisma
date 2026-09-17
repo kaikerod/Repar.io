@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model WorkOrder {
+  id                Int      @id @default(autoincrement())
+  customerName      String
+  customerPhone     String?
+  device            String
+  issue             String
+  status            String   @default("AGENDADO")
+  scheduledDate     DateTime
+  estimatedDuration Int?     // Duração estimada do reparo em minutos (ex: 30, 60, 90)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
