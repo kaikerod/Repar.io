@@ -53,7 +53,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const {
       customerName,
-      customerPhone,
       device,
       issue,
       scheduledDate,
@@ -71,7 +70,6 @@ export async function POST(request: Request) {
     const newOrder = await prisma.workOrder.create({
       data: {
         customerName,
-        customerPhone: customerPhone || null,
         device,
         issue,
         scheduledDate: new Date(scheduledDate),

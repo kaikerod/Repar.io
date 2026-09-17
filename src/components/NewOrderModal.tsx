@@ -6,7 +6,6 @@ import {
   Calendar,
   Clock,
   User,
-  Phone,
   Smartphone,
   AlertCircle,
   FileText,
@@ -41,7 +40,6 @@ export function NewOrderModal({
   const initialTimeStr = format(new Date(), "HH:mm");
 
   const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
   const [device, setDevice] = useState("");
   const [issue, setIssue] = useState("");
   const [date, setDate] = useState(initialDateStr);
@@ -98,7 +96,6 @@ export function NewOrderModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerName: customerName.trim(),
-          customerPhone: customerPhone.trim(),
           device: device.trim(),
           issue: issue.trim(),
           scheduledDate: scheduledDateTime.toISOString(),
@@ -114,7 +111,6 @@ export function NewOrderModal({
 
       // Reset and close
       setCustomerName("");
-      setCustomerPhone("");
       setDevice("");
       setIssue("");
       setEstimatedDuration("60");
@@ -160,39 +156,21 @@ export function NewOrderModal({
             </div>
           )}
 
-          {/* Customer Info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Nome do Cliente *
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Carlos Oliveira"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Telefone / WhatsApp
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Ex: 11999998888"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-              </div>
+          {/* Customer Name */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Nome do Cliente *
+            </label>
+            <div className="relative">
+              <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                required
+                placeholder="Ex: Carlos Oliveira"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
             </div>
           </div>
 

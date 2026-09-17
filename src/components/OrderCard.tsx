@@ -5,7 +5,6 @@ import {
   Clock,
   Smartphone,
   User,
-  MessageCircle,
   FileText,
   MoreVertical,
   ChevronRight,
@@ -20,11 +19,9 @@ import { WorkOrder, OrderStatus } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import {
   formatOSNumber,
-  formatPhone,
   formatDuration,
   formatTimeRange,
   findConflictingOrders,
-  getWhatsAppUrl,
   STATUS_CONFIG,
 } from "@/lib/utils";
 
@@ -68,13 +65,6 @@ export function OrderCard({
       setIsUpdating(false);
     }
   };
-
-  const whatsappMessage =
-    order.status === "CONCLUIDO"
-      ? `Olá ${order.customerName}! Seu aparelho (${order.device}) está pronto para retirada na assistência técnica. (O.S. ${formatOSNumber(order.id)})`
-      : `Olá ${order.customerName}! Entramos em contato a respeito da ordem de serviço ${formatOSNumber(order.id)} (${order.device}).`;
-
-  const waUrl = getWhatsAppUrl(order.customerPhone, whatsappMessage);
 
   return (
     <div className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-4 sm:p-5 transition-all shadow-xs hover:shadow-md relative group">
@@ -213,38 +203,14 @@ export function OrderCard({
         )}
       </div>
 
-      {/* Footer row: Customer, WhatsApp, Cost */}
-      <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-        
-        {/* Customer Info & WhatsApp Link */}
+      {/* Footer row: Customer */}
+      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
             <User className="w-3.5 h-3.5" />
           </div>
           <span className="font-semibold text-slate-800">{order.customerName}</span>
-
-          {order.customerPhone && (
-            <>
-              <span className="text-slate-300">•</span>
-              <span className="text-slate-500">{formatPhone(order.customerPhone)}</span>
-
-              {waUrl && (
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Conversar no WhatsApp"
-                  className="inline-flex items-center gap-1 ml-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors font-medium"
-                >
-                  <MessageCircle className="w-3 h-3 text-emerald-600" />
-                  <span>WhatsApp</span>
-                </a>
-              )}
-            </>
-          )}
         </div>
-
-
       </div>
 
     </div>

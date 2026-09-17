@@ -8,7 +8,6 @@ export type OrderStatus =
 export interface WorkOrder {
   id: number;
   customerName: string;
-  customerPhone?: string | null;
   device: string;
   issue: string;
   status: OrderStatus;

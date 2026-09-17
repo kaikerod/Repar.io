@@ -10,7 +10,6 @@ datasource db {
 model WorkOrder {
   id                Int      @id @default(autoincrement())
   customerName      String
-  customerPhone     String?
   device            String
   issue             String
   status            String   @default("AGENDADO")

@@ -33,8 +33,6 @@ Aplicativo pessoal para técnicos de assistência técnica acompanharem seus **r
     - 🟢 `Concluído` (pronto para retirada)
     - ⚪ `Entregue`
     - 🔴 `Cancelado`
-- 💬 **Contato Rápido via WhatsApp**:
-  - Link direto com o cliente com mensagem pronta sobre a O.S.
 - 🔍 **Busca em Tempo Real**:
   - Pesquisa instantânea por número da O.S., nome do cliente, modelo do aparelho ou defeito.
 - 📊 **Contadores no Topo**:

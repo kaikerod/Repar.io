@@ -35,7 +35,6 @@ export async function PATCH(
     const dataToUpdate: any = {};
     if (body.status !== undefined) dataToUpdate.status = body.status;
     if (body.customerName !== undefined) dataToUpdate.customerName = body.customerName;
-    if (body.customerPhone !== undefined) dataToUpdate.customerPhone = body.customerPhone;
     if (body.device !== undefined) dataToUpdate.device = body.device;
     if (body.issue !== undefined) dataToUpdate.issue = body.issue;
     if (body.notes !== undefined) dataToUpdate.notes = body.notes;

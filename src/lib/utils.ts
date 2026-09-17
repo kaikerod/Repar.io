@@ -84,27 +84,6 @@ export function findConflictingOrders<
   });
 }
 
-export function formatPhone(phone?: string | null): string {
-  if (!phone) return "";
-  const cleaned = phone.replace(/\D/g, "");
-  if (cleaned.length === 11) {
-    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
-  } else if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
-  }
-  return phone;
-}
-
-export function getWhatsAppUrl(phone?: string | null, message?: string): string | null {
-  if (!phone) return null;
-  let cleaned = phone.replace(/\D/g, "");
-  if (!cleaned.startsWith("55") && (cleaned.length === 10 || cleaned.length === 11)) {
-    cleaned = `55${cleaned}`;
-  }
-  const text = encodeURIComponent(message || "Olá! Entro em contato referente à sua ordem de serviço na assistência.");
-  return `https://wa.me/${cleaned}?text=${text}`;
-}
-
 export const STATUS_CONFIG: Record<
   OrderStatus,
   { label: string; bg: string; text: string; border: string; dot: string }
