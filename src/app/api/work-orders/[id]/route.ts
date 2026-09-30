@@ -34,15 +34,22 @@ export async function PATCH(
 
     const dataToUpdate: any = {};
     if (body.status !== undefined) dataToUpdate.status = body.status;
-    if (body.customerName !== undefined) dataToUpdate.customerName = body.customerName;
-    if (body.device !== undefined) dataToUpdate.device = body.device;
-    if (body.issue !== undefined) dataToUpdate.issue = body.issue;
-    if (body.notes !== undefined) dataToUpdate.notes = body.notes;
+    if (body.customerName !== undefined) dataToUpdate.customerName = body.customerName.trim();
+    if (body.device !== undefined) dataToUpdate.device = body.device.trim();
+    if (body.issue !== undefined) dataToUpdate.issue = body.issue.trim();
+    if (body.notes !== undefined) dataToUpdate.notes = body.notes ? body.notes.trim() : null;
     if (body.estimatedDuration !== undefined) {
       dataToUpdate.estimatedDuration = body.estimatedDuration === "" || body.estimatedDuration === null ? null : parseInt(body.estimatedDuration, 10);
     }
     if (body.scheduledDate !== undefined) {
-      dataToUpdate.scheduledDate = new Date(body.scheduledDate);
+      dataToUpdate.scheduledDate = body.scheduledDate ? new Date(body.scheduledDate) : null;
+      // If a scheduledDate is being assigned to an order that was PENDENTE, and no status was explicitly given, transition to AGENDADO
+      if (body.scheduledDate && body.status === undefined) {
+        const currentOrder = await prisma.workOrder.findUnique({ where: { id: orderId } });
+        if (currentOrder?.status === "PENDENTE") {
+          dataToUpdate.status = "AGENDADO";
+        }
+      }
     }
 
     const updated = await prisma.workOrder.update({

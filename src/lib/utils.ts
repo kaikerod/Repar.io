@@ -28,9 +28,12 @@ export function formatDuration(minutes?: number | null): string {
 }
 
 export function getOrderInterval(order: {
-  scheduledDate: string | Date;
+  scheduledDate?: string | Date | null;
   estimatedDuration?: number | null;
 }) {
+  if (!order.scheduledDate) {
+    return { start: new Date(0), end: new Date(0) };
+  }
   const start = new Date(order.scheduledDate);
   const durationMs = (order.estimatedDuration && order.estimatedDuration > 0 ? order.estimatedDuration : 30) * 60000;
   const end = new Date(start.getTime() + durationMs);
@@ -38,10 +41,12 @@ export function getOrderInterval(order: {
 }
 
 export function formatTimeRange(
-  scheduledDate: string | Date,
+  scheduledDate?: string | Date | null,
   durationMinutes?: number | null
 ): string {
+  if (!scheduledDate) return "Sem agendamento";
   const start = new Date(scheduledDate);
+  if (isNaN(start.getTime())) return "Sem agendamento";
   const duration = durationMinutes && durationMinutes > 0 ? durationMinutes : 30;
   const end = new Date(start.getTime() + duration * 60000);
 
@@ -54,7 +59,7 @@ export function formatTimeRange(
 }
 
 export function findConflictingOrders<
-  T extends { id: number; scheduledDate: string | Date; estimatedDuration?: number | null; status: string }
+  T extends { id: number; scheduledDate?: string | Date | null; estimatedDuration?: number | null; status: string }
 >(
   newStart: Date,
   durationMinutes: number,
@@ -66,7 +71,8 @@ export function findConflictingOrders<
 
   return existingOrders.filter((order) => {
     if (order.id === excludeOrderId) return false;
-    if (order.status === "CANCELADO" || order.status === "ENTREGUE") return false;
+    if (!order.scheduledDate) return false;
+    if (order.status === "PENDENTE" || order.status === "CANCELADO" || order.status === "ENTREGUE") return false;
 
     const { start: oStart, end: oEnd } = getOrderInterval(order);
 
@@ -88,6 +94,13 @@ export const STATUS_CONFIG: Record<
   OrderStatus,
   { label: string; bg: string; text: string; border: string; dot: string }
 > = {
+  PENDENTE: {
+    label: "Pendente de Agendamento",
+    bg: "bg-purple-50",
+    text: "text-purple-700",
+    border: "border-purple-200",
+    dot: "bg-purple-500",
+  },
   AGENDADO: {
     label: "Agendado",
     bg: "bg-blue-50",

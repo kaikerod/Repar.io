@@ -1,4 +1,5 @@
 export type OrderStatus =
+  | "PENDENTE"
   | "AGENDADO"
   | "NA_BANCADA"
   | "CONCLUIDO"
@@ -11,7 +12,7 @@ export interface WorkOrder {
   device: string;
   issue: string;
   status: OrderStatus;
-  scheduledDate: string | Date;
+  scheduledDate?: string | Date | null;
   estimatedDuration?: number | null; // Duração em minutos (ex: 30, 60, 90)
   notes?: string | null;
   createdAt: string | Date;

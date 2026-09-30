@@ -12,6 +12,7 @@ import {
   Wrench,
   AlertTriangle,
   ListTodo,
+  CalendarClock,
 } from "lucide-react";
 import { WorkOrder, OrderStatus } from "@/types";
 import { Navbar } from "@/components/Navbar";
@@ -21,17 +22,21 @@ import { OrderCard } from "@/components/OrderCard";
 import { CalendarView } from "@/components/CalendarView";
 import { NewOrderModal } from "@/components/NewOrderModal";
 import { EditOrderModal } from "@/components/EditOrderModal";
+import { ScheduleOrderModal } from "@/components/ScheduleOrderModal";
+import { PendingOrdersView } from "@/components/PendingOrdersView";
 
 export default function Home() {
   const [allOrders, setAllOrders] = useState<WorkOrder[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [activeStatusFilter, setActiveStatusFilter] = useState<OrderStatus | null>(null);
-  const [viewMode, setViewMode] = useState<"agenda" | "calendar">("agenda");
+  const [viewMode, setViewMode] = useState<"agenda" | "calendar" | "pending">("agenda");
 
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [newModalDefaultDate, setNewModalDefaultDate] = useState<Date | null>(new Date());
+  const [newModalDefaultPending, setNewModalDefaultPending] = useState(false);
   const [editingOrder, setEditingOrder] = useState<WorkOrder | null>(null);
+  const [schedulingOrder, setSchedulingOrder] = useState<WorkOrder | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch all orders from API
@@ -89,10 +94,11 @@ export default function Home() {
     }
   };
 
-  const handleOpenNewOrderWithDate = (d?: Date | null) => {
+  const handleOpenNewOrderWithDate = (d?: Date | null, isPending = false) => {
     const targetDate = d || selectedDate || new Date();
     setSelectedDate(targetDate);
     setNewModalDefaultDate(targetDate);
+    setNewModalDefaultPending(isPending);
     setIsNewModalOpen(true);
   };
 
@@ -109,12 +115,34 @@ export default function Home() {
     );
   }, [allOrders, searchTerm]);
 
+  // Pending orders
+  const pendingOrders = useMemo(() => {
+    return searchedOrders.filter(
+      (o) => o.status === "PENDENTE" || !o.scheduledDate
+    );
+  }, [searchedOrders]);
+
+  const pendingCount = useMemo(() => {
+    return allOrders.filter(
+      (o) => o.status === "PENDENTE" || !o.scheduledDate
+    ).length;
+  }, [allOrders]);
+
   // Orders displayed in Agenda view
   const agendaOrders = useMemo(() => {
     let list = searchedOrders;
 
+    if (activeStatusFilter === "PENDENTE") {
+      return list.filter((o) => o.status === "PENDENTE" || !o.scheduledDate);
+    }
+
     if (selectedDate) {
-      list = list.filter((o) => isSameDay(new Date(o.scheduledDate), selectedDate));
+      list = list.filter(
+        (o) => o.scheduledDate && isSameDay(new Date(o.scheduledDate), selectedDate)
+      );
+    } else {
+      // "Ver Todos" in Agenda: scheduled orders only
+      list = list.filter((o) => Boolean(o.scheduledDate));
     }
 
     if (activeStatusFilter) {
@@ -130,8 +158,9 @@ export default function Home() {
 
   // Orders displayed in Calendar view (responds to search & status filter)
   const calendarOrders = useMemo(() => {
-    if (!activeStatusFilter) return searchedOrders;
-    return searchedOrders.filter((o) =>
+    let list = searchedOrders.filter((o) => Boolean(o.scheduledDate));
+    if (!activeStatusFilter) return list;
+    return list.filter((o) =>
       activeStatusFilter === "CONCLUIDO"
         ? o.status === "CONCLUIDO" || o.status === "ENTREGUE"
         : o.status === activeStatusFilter
@@ -142,7 +171,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-slate-50/80">
       {/* Navbar with brand, search and + Nova O.S. */}
       <Navbar
-        onOpenNewOrder={() => handleOpenNewOrderWithDate(selectedDate)}
+        onOpenNewOrder={() => handleOpenNewOrderWithDate(selectedDate, false)}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
       />
@@ -152,10 +181,13 @@ export default function Home() {
         {/* View Mode Switcher and Top Actions */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           
-          {/* Tabs: Agenda vs Calendário */}
+          {/* Tabs: Agenda vs Calendário vs Pendentes */}
           <div className="flex items-center bg-slate-200/80 p-1 rounded-xl w-fit shadow-2xs">
             <button
-              onClick={() => setViewMode("agenda")}
+              onClick={() => {
+                setViewMode("agenda");
+                setActiveStatusFilter(null);
+              }}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === "agenda"
                   ? "bg-white text-slate-900 shadow-xs"
@@ -167,7 +199,10 @@ export default function Home() {
             </button>
 
             <button
-              onClick={() => setViewMode("calendar")}
+              onClick={() => {
+                setViewMode("calendar");
+                setActiveStatusFilter(null);
+              }}
               className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 viewMode === "calendar"
                   ? "bg-white text-slate-900 shadow-xs"
@@ -176,6 +211,32 @@ export default function Home() {
             >
               <CalendarIcon className="w-3.5 h-3.5 text-indigo-600" />
               <span>Visão Calendário</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setViewMode("pending");
+                setActiveStatusFilter(null);
+              }}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === "pending"
+                  ? "bg-white text-purple-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <CalendarClock className="w-3.5 h-3.5 text-purple-600" />
+              <span>Pendentes</span>
+              {pendingCount > 0 && (
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+                    viewMode === "pending"
+                      ? "bg-purple-600 text-white"
+                      : "bg-purple-100 text-purple-700"
+                  }`}
+                >
+                  {pendingCount}
+                </span>
+              )}
             </button>
           </div>
 
@@ -188,11 +249,22 @@ export default function Home() {
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
             <button
-              onClick={() => handleOpenNewOrderWithDate(selectedDate)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-all cursor-pointer"
+              onClick={() =>
+                handleOpenNewOrderWithDate(
+                  selectedDate,
+                  viewMode === "pending"
+                )
+              }
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-white rounded-lg text-xs font-semibold shadow-xs transition-all cursor-pointer ${
+                viewMode === "pending"
+                  ? "bg-purple-600 hover:bg-purple-700"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Agendar Novo Reparo</span>
+              <span>
+                {viewMode === "pending" ? "Nova O.S. Pendente" : "Agendar Novo Reparo"}
+              </span>
             </button>
           </div>
 
@@ -202,16 +274,38 @@ export default function Home() {
         <MetricsBar
           orders={viewMode === "agenda" && selectedDate ? agendaOrders : allOrders}
           activeFilter={activeStatusFilter}
-          onSelectFilter={setActiveStatusFilter}
+          onSelectFilter={(status) => {
+            if (status === "PENDENTE") {
+              setViewMode("pending");
+              setActiveStatusFilter(null);
+            } else {
+              setActiveStatusFilter(status);
+              if (viewMode === "pending" && status !== null) {
+                setViewMode("agenda");
+              }
+            }
+          }}
         />
 
         {/* Conditionally Render View */}
-        {viewMode === "calendar" ? (
+        {viewMode === "pending" ? (
+          /* Pending Orders View */
+          <PendingOrdersView
+            orders={pendingOrders}
+            onSchedule={(ord) => setSchedulingOrder(ord)}
+            onEdit={(ord) => setEditingOrder(ord)}
+            onDelete={handleDelete}
+            onOpenNewOrder={() => handleOpenNewOrderWithDate(null, true)}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        ) : viewMode === "calendar" ? (
           /* Calendar View */
           <CalendarView
             orders={calendarOrders}
             onSelectOrder={(ord) => setEditingOrder(ord)}
-            onOpenNewOrderForDate={(d) => handleOpenNewOrderWithDate(d)}
+            onOpenNewOrderForDate={(d) => handleOpenNewOrderWithDate(d, false)}
+            onViewPending={() => setViewMode("pending")}
+            pendingCount={pendingCount}
           />
         ) : (
           /* Agenda / Day List View */
@@ -225,6 +319,24 @@ export default function Home() {
                 setActiveStatusFilter(null);
               }}
             />
+
+            {/* Pending Alert banner in Agenda */}
+            {pendingCount > 0 && (
+              <div className="flex items-center justify-between p-3.5 bg-purple-50/90 border border-purple-200 rounded-xl text-xs text-purple-900 shadow-2xs animate-in fade-in">
+                <div className="flex items-center gap-2.5">
+                  <CalendarClock className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>
+                    Você possui <strong>{pendingCount} {pendingCount === 1 ? "reparo pendente" : "reparos pendentes"}</strong> de agendamento na bancada.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setViewMode("pending")}
+                  className="font-bold text-purple-700 hover:text-purple-900 underline cursor-pointer shrink-0 ml-2"
+                >
+                  Ver Pendentes →
+                </button>
+              </div>
+            )}
 
             {/* Header row of Agenda */}
             <div className="flex items-center justify-between">
@@ -258,14 +370,23 @@ export default function Home() {
                     ? "Nenhuma ordem de serviço corresponde à pesquisa."
                     : "Não há reparos marcados para este dia ou filtro."}
                 </p>
-                <div className="pt-2">
+                <div className="pt-2 flex items-center justify-center gap-2">
                   <button
-                    onClick={() => handleOpenNewOrderWithDate(selectedDate)}
+                    onClick={() => handleOpenNewOrderWithDate(selectedDate, false)}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Agendar Primeiro Reparo</span>
                   </button>
+                  {pendingCount > 0 && (
+                    <button
+                      onClick={() => setViewMode("pending")}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                    >
+                      <CalendarClock className="w-3.5 h-3.5" />
+                      <span>Agendar da Fila ({pendingCount})</span>
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -278,6 +399,7 @@ export default function Home() {
                     onUpdateStatus={handleUpdateStatus}
                     onEdit={(ord) => setEditingOrder(ord)}
                     onDelete={handleDelete}
+                    onSchedule={(ord) => setSchedulingOrder(ord)}
                   />
                 ))}
               </div>
@@ -287,12 +409,13 @@ export default function Home() {
 
       </main>
 
-      {/* Modals with full overlap check */}
+      {/* Modals */}
       <NewOrderModal
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
         onCreated={fetchOrders}
         defaultDate={newModalDefaultDate}
+        defaultPending={newModalDefaultPending}
         existingOrders={allOrders}
       />
 
@@ -301,6 +424,14 @@ export default function Home() {
         isOpen={editingOrder !== null}
         onClose={() => setEditingOrder(null)}
         onUpdated={fetchOrders}
+        existingOrders={allOrders}
+      />
+
+      <ScheduleOrderModal
+        order={schedulingOrder}
+        isOpen={schedulingOrder !== null}
+        onClose={() => setSchedulingOrder(null)}
+        onScheduled={fetchOrders}
         existingOrders={allOrders}
       />
 

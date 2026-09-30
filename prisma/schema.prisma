@@ -13,7 +13,7 @@ model WorkOrder {
   device            String
   issue             String
   status            String   @default("AGENDADO")
-  scheduledDate     DateTime
+  scheduledDate     DateTime? // Null quando a O.S. ainda está pendente de agendamento
   estimatedDuration Int?     // Duração estimada do reparo em minutos (ex: 30, 60, 90)
   notes             String?
   createdAt         DateTime @default(now())
