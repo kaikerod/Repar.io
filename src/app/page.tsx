@@ -111,6 +111,7 @@ export default function Home() {
         o.customerName.toLowerCase().includes(term) ||
         o.device.toLowerCase().includes(term) ||
         o.issue.toLowerCase().includes(term) ||
+        (o.osNumber && o.osNumber.toLowerCase().includes(term)) ||
         String(o.id).includes(term)
     );
   }, [allOrders, searchTerm]);

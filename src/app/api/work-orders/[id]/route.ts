@@ -33,6 +33,9 @@ export async function PATCH(
     const body = await request.json();
 
     const dataToUpdate: any = {};
+    if (body.osNumber !== undefined) {
+      dataToUpdate.osNumber = body.osNumber && body.osNumber.trim() ? body.osNumber.trim() : null;
+    }
     if (body.status !== undefined) dataToUpdate.status = body.status;
     if (body.customerName !== undefined) dataToUpdate.customerName = body.customerName.trim();
     if (body.device !== undefined) dataToUpdate.device = body.device.trim();

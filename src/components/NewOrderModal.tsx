@@ -13,6 +13,7 @@ import {
   Sparkles,
   CalendarClock,
   Info,
+  Hash,
 } from "lucide-react";
 import { format } from "date-fns";
 import { WorkOrder } from "@/types";
@@ -43,6 +44,7 @@ export function NewOrderModal({
   const initialDateStr = format(defaultDate || new Date(), "yyyy-MM-dd");
   const initialTimeStr = format(new Date(), "HH:mm");
 
+  const [osNumber, setOsNumber] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [device, setDevice] = useState("");
   const [issue, setIssue] = useState("");
@@ -63,6 +65,7 @@ export function NewOrderModal({
       setDate(format(targetDate, "yyyy-MM-dd"));
       setTime(format(new Date(), "HH:mm"));
       setIsPending(Boolean(defaultPending));
+      setOsNumber("");
       setCustomerName("");
       setDevice("");
       setIssue("");
@@ -123,6 +126,7 @@ export function NewOrderModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          osNumber: osNumber.trim() || null,
           customerName: customerName.trim(),
           device: device.trim(),
           issue: issue.trim(),
@@ -140,6 +144,7 @@ export function NewOrderModal({
       }
 
       // Reset and close
+      setOsNumber("");
       setCustomerName("");
       setDevice("");
       setIssue("");
@@ -192,21 +197,39 @@ export function NewOrderModal({
             </div>
           )}
 
-          {/* Customer Name */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Nome do Cliente *
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                required
-                placeholder="Ex: Carlos Oliveira"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
+          {/* OS Number & Customer Name */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Nº da O.S. <span className="text-slate-400 font-normal text-[11px]">(outro sistema)</span>
+              </label>
+              <div className="relative">
+                <Hash className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Ex: 1042 ou OS-2024"
+                  value={osNumber}
+                  onChange={(e) => setOsNumber(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Nome do Cliente *
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Carlos Oliveira"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 
@@ -220,7 +243,7 @@ export function NewOrderModal({
               <input
                 type="text"
                 required
-                placeholder="Ex: iPhone 14 Pro Max 256GB"
+                placeholder="Ex: Samsung Galaxy S24 Ultra 256GB"
                 value={device}
                 onChange={(e) => setDevice(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -334,7 +357,7 @@ export function NewOrderModal({
                         className="text-[11px] text-amber-900 bg-amber-100/70 px-2 py-1 rounded flex items-center justify-between"
                       >
                         <span>
-                          <strong className="font-mono">{formatOSNumber(co.id)}</strong> - {co.device}
+                          <strong className="font-mono">{formatOSNumber(co)}</strong> - {co.device}
                         </span>
                         <span className="font-semibold text-amber-800">
                           {formatTimeRange(co.scheduledDate, co.estimatedDuration)}

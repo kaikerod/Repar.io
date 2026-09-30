@@ -418,7 +418,7 @@ export function CalendarView({
                         <div className="my-1.5 px-2 py-1 bg-amber-100/80 border border-amber-300 text-amber-900 rounded text-[11px] flex items-center justify-between">
                           <span className="flex items-center gap-1 font-semibold">
                             <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" />
-                            <span>Sobrepõe ({timeRange}) com {orderConflicts.map((c) => formatOSNumber(c.id)).join(", ")}</span>
+                            <span>Sobrepõe ({timeRange}) com {orderConflicts.map((c) => formatOSNumber(c)).join(", ")}</span>
                           </span>
                         </div>
                       )}
@@ -437,7 +437,12 @@ export function CalendarView({
 
                       <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                         <span>{order.customerName}</span>
-                        <span className="font-mono font-medium">{formatOSNumber(order.id)}</span>
+                        <span
+                          className="font-mono font-medium"
+                          title={`ID interno: #${order.id}${order.osNumber ? ` • OS Externa: ${order.osNumber}` : ""}`}
+                        >
+                          {formatOSNumber(order)}
+                        </span>
                       </div>
                     </div>
                   );

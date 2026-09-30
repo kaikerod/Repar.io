@@ -120,8 +120,11 @@ export function PendingOrdersView({
                   {/* Top row */}
                   <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-100">
-                        {formatOSNumber(order.id)}
+                      <span
+                        className="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-100"
+                        title={`ID interno: #${order.id}${order.osNumber ? ` • OS Externa: ${order.osNumber}` : ""}`}
+                      >
+                        {formatOSNumber(order)}
                       </span>
                       <StatusBadge
                         status={order.status}
@@ -170,7 +173,7 @@ export function PendingOrdersView({
                                 if (
                                   confirm(
                                     `Deseja realmente excluir a ${formatOSNumber(
-                                      order.id
+                                      order
                                     )}?`
                                   )
                                 ) {
