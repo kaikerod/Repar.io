@@ -171,7 +171,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-slate-50/80">
       {/* Navbar with brand, search and + Nova O.S. */}
       <Navbar
-        onOpenNewOrder={() => handleOpenNewOrderWithDate(selectedDate, false)}
+        onOpenNewOrder={() => handleOpenNewOrderWithDate(selectedDate, viewMode === "pending")}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
       />
@@ -248,24 +248,6 @@ export default function Home() {
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
-            <button
-              onClick={() =>
-                handleOpenNewOrderWithDate(
-                  selectedDate,
-                  viewMode === "pending"
-                )
-              }
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-white rounded-lg text-xs font-semibold shadow-xs transition-all cursor-pointer ${
-                viewMode === "pending"
-                  ? "bg-purple-600 hover:bg-purple-700"
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>
-                {viewMode === "pending" ? "Nova O.S. Pendente" : "Agendar Novo Reparo"}
-              </span>
-            </button>
           </div>
 
         </div>
@@ -273,13 +255,14 @@ export default function Home() {
         {/* Top Summary Metrics */}
         <MetricsBar
           orders={viewMode === "agenda" && selectedDate ? agendaOrders : allOrders}
+          pendingCount={pendingCount}
           activeFilter={activeStatusFilter}
           onSelectFilter={(status) => {
             if (status === "PENDENTE") {
               setViewMode("pending");
               setActiveStatusFilter(null);
             } else {
-              setActiveStatusFilter(status);
+              setActiveStatusFilter((prev) => (prev === status ? null : status));
               if (viewMode === "pending" && status !== null) {
                 setViewMode("agenda");
               }
@@ -319,24 +302,6 @@ export default function Home() {
                 setActiveStatusFilter(null);
               }}
             />
-
-            {/* Pending Alert banner in Agenda */}
-            {pendingCount > 0 && (
-              <div className="flex items-center justify-between p-3.5 bg-purple-50/90 border border-purple-200 rounded-xl text-xs text-purple-900 shadow-2xs animate-in fade-in">
-                <div className="flex items-center gap-2.5">
-                  <CalendarClock className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>
-                    Você possui <strong>{pendingCount} {pendingCount === 1 ? "reparo pendente" : "reparos pendentes"}</strong> de agendamento na bancada.
-                  </span>
-                </div>
-                <button
-                  onClick={() => setViewMode("pending")}
-                  className="font-bold text-purple-700 hover:text-purple-900 underline cursor-pointer shrink-0 ml-2"
-                >
-                  Ver Pendentes →
-                </button>
-              </div>
-            )}
 
             {/* Header row of Agenda */}
             <div className="flex items-center justify-between">

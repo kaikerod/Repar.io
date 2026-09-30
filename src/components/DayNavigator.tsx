@@ -89,16 +89,14 @@ export function DayNavigator({ selectedDate, onDateChange }: DayNavigatorProps) 
 
       {/* Quick shortcuts and Pickers */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={handleToday}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
-            selectedDate && isToday(selectedDate)
-              ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-              : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
-          }`}
-        >
-          Hoje
-        </button>
+        {(!selectedDate || !isToday(selectedDate)) && (
+          <button
+            onClick={handleToday}
+            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-all cursor-pointer"
+          >
+            Ir para Hoje
+          </button>
+        )}
 
         {/* Date picker input */}
         <input

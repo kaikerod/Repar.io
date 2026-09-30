@@ -8,12 +8,16 @@ interface MetricsBarProps {
   orders: WorkOrder[];
   activeFilter: string | null;
   onSelectFilter: (status: OrderStatus | null) => void;
+  pendingCount?: number;
 }
 
-export function MetricsBar({ orders, activeFilter, onSelectFilter }: MetricsBarProps) {
+export function MetricsBar({ orders, activeFilter, onSelectFilter, pendingCount }: MetricsBarProps) {
   const countByStatus = {
     total: orders.length,
-    pendente: orders.filter((o) => o.status === "PENDENTE" || !o.scheduledDate).length,
+    pendente:
+      pendingCount !== undefined
+        ? pendingCount
+        : orders.filter((o) => o.status === "PENDENTE" || !o.scheduledDate).length,
     agendado: orders.filter((o) => o.status === "AGENDADO" && o.scheduledDate).length,
     naBancada: orders.filter((o) => o.status === "NA_BANCADA").length,
     concluido: orders.filter(

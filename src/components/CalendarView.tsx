@@ -117,24 +117,6 @@ export function CalendarView({
 
   return (
     <div className="space-y-6">
-      {/* Alert banner for pending orders if any */}
-      {pendingCount > 0 && onViewPending && (
-        <div className="flex items-center justify-between p-3.5 bg-purple-50/80 border border-purple-200 rounded-xl text-xs text-purple-900 shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <CalendarClock className="w-4 h-4 text-purple-600 shrink-0" />
-            <span>
-              Você possui <strong>{pendingCount} {pendingCount === 1 ? "reparo pendente" : "reparos pendentes"}</strong> de agendamento (sem data marcada na bancada).
-            </span>
-          </div>
-          <button
-            onClick={onViewPending}
-            className="font-bold text-purple-700 hover:text-purple-900 underline cursor-pointer shrink-0 ml-2"
-          >
-            Ver Pendentes →
-          </button>
-        </div>
-      )}
-
       {/* Calendar Header */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-white border border-slate-200 rounded-xl shadow-xs">
         <div className="flex items-center gap-3">
