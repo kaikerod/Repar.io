@@ -8,6 +8,7 @@ export type OrderStatus =
 
 export interface WorkOrder {
   id: number;
+  osNumber?: string | null; // Número da O.S. informado/gerado por outro sistema
   customerName: string;
   device: string;
   issue: string;

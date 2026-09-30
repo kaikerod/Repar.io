@@ -29,6 +29,7 @@ export async function GET(request: Request) {
         { customerName: { contains: term } },
         { device: { contains: term } },
         { issue: { contains: term } },
+        { osNumber: { contains: term } },
       ];
       const parsedNumber = parseInt(term.replace(/\D/g, ""), 10);
       if (!isNaN(parsedNumber)) {
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
+      osNumber,
       customerName,
       device,
       issue,
@@ -96,6 +98,7 @@ export async function POST(request: Request) {
 
     const newOrder = await prisma.workOrder.create({
       data: {
+        osNumber: osNumber && osNumber.trim() ? osNumber.trim() : null,
         customerName: customerName.trim(),
         device: device.trim(),
         issue: issue.trim(),

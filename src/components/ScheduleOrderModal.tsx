@@ -142,7 +142,7 @@ export function ScheduleOrderModal({
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-slate-900">Agendar na Bancada</h2>
               <span className="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                {formatOSNumber(order.id)}
+                {formatOSNumber(order)}
               </span>
             </div>
             <p className="text-xs text-slate-500">Defina a data e o horário para iniciar este reparo</p>
@@ -167,6 +167,14 @@ export function ScheduleOrderModal({
               {order.customerName}
             </span>
           </div>
+          {order.osNumber && (
+            <div className="text-[11px] text-slate-600 font-mono flex items-center gap-1">
+              <span className="font-semibold text-slate-700">OS Externa:</span>
+              <span className="bg-white border border-slate-200 px-1.5 py-0.5 rounded text-indigo-700 font-bold">
+                {order.osNumber}
+              </span>
+            </div>
+          )}
           <p className="text-slate-600 line-clamp-2">
             <strong className="text-slate-700">Defeito: </strong>{order.issue}
           </p>
@@ -223,7 +231,7 @@ export function ScheduleOrderModal({
                 <div>
                   <p className="font-semibold text-amber-800">Conflito de Horário na Bancada!</p>
                   <p className="text-[11px] text-amber-700 mt-0.5">
-                    Coincide com {conflictingOrders.map((co) => formatOSNumber(co.id)).join(", ")} (
+                    Coincide com {conflictingOrders.map((co) => formatOSNumber(co)).join(", ")} (
                     {formatTimeRange(conflictingOrders[0].scheduledDate, conflictingOrders[0].estimatedDuration)}
                     ).
                   </p>

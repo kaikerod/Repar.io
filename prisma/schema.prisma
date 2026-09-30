@@ -9,6 +9,7 @@ datasource db {
 
 model WorkOrder {
   id                Int      @id @default(autoincrement())
+  osNumber          String?  // Número da O.S. informado/gerado por outro sistema
   customerName      String
   device            String
   issue             String

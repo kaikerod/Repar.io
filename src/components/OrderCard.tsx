@@ -102,8 +102,11 @@ export function OrderCard({
           )}
 
           {/* OS Number */}
-          <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
-            {formatOSNumber(order.id)}
+          <span
+            className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md"
+            title={`ID interno: #${order.id}${order.osNumber ? ` • OS Externa: ${order.osNumber}` : ""}`}
+          >
+            {formatOSNumber(order)}
           </span>
 
           <span className="text-xs text-slate-400 hidden sm:inline">
@@ -163,7 +166,7 @@ export function OrderCard({
                       setMenuOpen(false);
                       if (
                         confirm(
-                          `Deseja realmente excluir a ${formatOSNumber(order.id)}?`
+                          `Deseja realmente excluir a ${formatOSNumber(order)}?`
                         )
                       ) {
                         onDelete(order.id);
@@ -188,7 +191,7 @@ export function OrderCard({
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
             <span>
               <strong>Horário concorrente:</strong> Coincide com{" "}
-              {conflicts.map((c) => formatOSNumber(c.id)).join(", ")} ({timeRangeStr})
+              {conflicts.map((c) => formatOSNumber(c)).join(", ")} ({timeRangeStr})
             </span>
           </div>
           <button

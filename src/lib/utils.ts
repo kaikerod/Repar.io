@@ -14,7 +14,29 @@ export function formatCurrency(value?: number | null): string {
   }).format(value);
 }
 
-export function formatOSNumber(id: number): string {
+export function formatOSNumber(
+  orderOrId: number | { id: number; osNumber?: string | null },
+  osNumber?: string | null
+): string {
+  let id: number;
+  let customOs: string | null | undefined;
+
+  if (typeof orderOrId === "number") {
+    id = orderOrId;
+    customOs = osNumber;
+  } else {
+    id = orderOrId.id;
+    customOs = orderOrId.osNumber;
+  }
+
+  if (customOs && customOs.trim() !== "") {
+    const trimmed = customOs.trim();
+    if (trimmed.toUpperCase().startsWith("OS") || trimmed.startsWith("#")) {
+      return trimmed;
+    }
+    return `OS #${trimmed}`;
+  }
+
   return `OS #${String(id).padStart(4, "0")}`;
 }
 
@@ -59,7 +81,7 @@ export function formatTimeRange(
 }
 
 export function findConflictingOrders<
-  T extends { id: number; scheduledDate?: string | Date | null; estimatedDuration?: number | null; status: string }
+  T extends { id: number; osNumber?: string | null; scheduledDate?: string | Date | null; estimatedDuration?: number | null; status: string }
 >(
   newStart: Date,
   durationMinutes: number,

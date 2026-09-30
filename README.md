@@ -23,7 +23,7 @@ Aplicativo pessoal para técnicos de assistência técnica acompanharem seus **r
   - Visualização cronológica dos reparos ordenados por horário de início.
   - Navegação entre datas: *Hoje*, *Ontem*, *Amanhã*, seletor de calendário e opção de *Ver Todos*.
 - 🔢 **Identificação e Controle de O.S.**:
-  - Numeração sequencial automática (ex: `OS #0001`, `OS #0002`).
+  - Campo para anotação do **Número de O.S.** gerado por outro sistema (ex: ERP ou sistema de gestão da loja) e identificador interno sequencial.
   - Aparelho/modelo e descrição detalhada do defeito relatado.
   - Observações e laudos técnicos internos.
 - ⏳ **Fila de O.S. Pendentes de Agendamento**:
