@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Calendar, Cpu, CheckCircle2, Layers } from "lucide-react";
+import { Calendar, Cpu, CheckCircle2, Layers, CalendarClock } from "lucide-react";
 import { WorkOrder, OrderStatus } from "@/types";
 
 interface MetricsBarProps {
@@ -13,9 +13,12 @@ interface MetricsBarProps {
 export function MetricsBar({ orders, activeFilter, onSelectFilter }: MetricsBarProps) {
   const countByStatus = {
     total: orders.length,
-    agendado: orders.filter((o) => o.status === "AGENDADO").length,
+    pendente: orders.filter((o) => o.status === "PENDENTE" || !o.scheduledDate).length,
+    agendado: orders.filter((o) => o.status === "AGENDADO" && o.scheduledDate).length,
     naBancada: orders.filter((o) => o.status === "NA_BANCADA").length,
-    concluido: orders.filter((o) => o.status === "CONCLUIDO" || o.status === "ENTREGUE").length,
+    concluido: orders.filter(
+      (o) => o.status === "CONCLUIDO" || o.status === "ENTREGUE"
+    ).length,
   };
 
   const metrics = [
@@ -26,6 +29,14 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter }: MetricsBarP
       icon: Layers,
       color: "text-slate-700 bg-slate-100 border-slate-200",
       activeColor: "ring-2 ring-slate-800 bg-slate-100",
+    },
+    {
+      id: "PENDENTE" as OrderStatus,
+      label: "Pendentes",
+      count: countByStatus.pendente,
+      icon: CalendarClock,
+      color: "text-purple-700 bg-purple-50 border-purple-200",
+      activeColor: "ring-2 ring-purple-600 bg-purple-50",
     },
     {
       id: "AGENDADO" as OrderStatus,
@@ -54,7 +65,7 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter }: MetricsBarP
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       {metrics.map((item) => {
         const Icon = item.icon;
         const isActive = activeFilter === item.id;

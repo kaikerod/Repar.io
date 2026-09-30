@@ -7,14 +7,13 @@ import {
   User,
   FileText,
   MoreVertical,
-  ChevronRight,
   Edit2,
   Trash2,
-  Check,
   AlertTriangle,
+  CalendarClock,
+  CalendarPlus,
 } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { WorkOrder, OrderStatus } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import {
@@ -22,7 +21,6 @@ import {
   formatDuration,
   formatTimeRange,
   findConflictingOrders,
-  STATUS_CONFIG,
 } from "@/lib/utils";
 
 interface OrderCardProps {
@@ -31,6 +29,7 @@ interface OrderCardProps {
   onUpdateStatus: (id: number, newStatus: OrderStatus) => Promise<void>;
   onEdit: (order: WorkOrder) => void;
   onDelete: (id: number) => Promise<void>;
+  onSchedule?: (order: WorkOrder) => void;
 }
 
 export function OrderCard({
@@ -39,23 +38,31 @@ export function OrderCard({
   onUpdateStatus,
   onEdit,
   onDelete,
+  onSchedule,
 }: OrderCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const dateObj = new Date(order.scheduledDate);
-  const timeFormatted = format(dateObj, "HH:mm");
-  const dateFormatted = format(dateObj, "dd/MM/yyyy");
-  const timeRangeStr = formatTimeRange(order.scheduledDate, order.estimatedDuration);
+  const isPending = order.status === "PENDENTE" || !order.scheduledDate;
+
+  const dateObj = order.scheduledDate ? new Date(order.scheduledDate) : null;
+  const timeFormatted = dateObj ? format(dateObj, "HH:mm") : null;
+  const dateFormatted = dateObj
+    ? format(dateObj, "dd/MM/yyyy")
+    : format(new Date(order.createdAt), "dd/MM/yyyy");
+  const timeRangeStr = order.scheduledDate
+    ? formatTimeRange(order.scheduledDate, order.estimatedDuration)
+    : "Sem agendamento";
 
   const conflicts = useMemo(() => {
+    if (isPending || !dateObj) return [];
     return findConflictingOrders(
       dateObj,
       order.estimatedDuration || 30,
       allOrders,
       order.id
     );
-  }, [dateObj, order, allOrders]);
+  }, [isPending, dateObj, order, allOrders]);
 
   const handleStatusChange = async (newStatus: OrderStatus) => {
     try {
@@ -68,20 +75,31 @@ export function OrderCard({
 
   return (
     <div className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-4 sm:p-5 transition-all shadow-xs hover:shadow-md relative group">
-      
       {/* Top row: Time, OS number, Status, and Menu */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          {/* Time badge */}
-          <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-lg text-sm border border-indigo-100">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{timeFormatted}</span>
-            {order.estimatedDuration ? (
-              <span className="text-[11px] font-semibold text-indigo-800 bg-indigo-200/60 px-1.5 py-0.5 rounded ml-0.5">
-                ~{formatDuration(order.estimatedDuration)}
-              </span>
-            ) : null}
-          </div>
+          {/* Time badge or Pending badge */}
+          {isPending ? (
+            <div className="flex items-center gap-1.5 bg-purple-50 text-purple-700 font-bold px-2.5 py-1 rounded-lg text-xs border border-purple-100">
+              <CalendarClock className="w-3.5 h-3.5" />
+              <span>Pendente</span>
+              {order.estimatedDuration ? (
+                <span className="text-[11px] font-semibold text-purple-800 bg-purple-200/60 px-1.5 py-0.5 rounded ml-0.5">
+                  ~{formatDuration(order.estimatedDuration)}
+                </span>
+              ) : null}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-lg text-sm border border-indigo-100">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{timeFormatted}</span>
+              {order.estimatedDuration ? (
+                <span className="text-[11px] font-semibold text-indigo-800 bg-indigo-200/60 px-1.5 py-0.5 rounded ml-0.5">
+                  ~{formatDuration(order.estimatedDuration)}
+                </span>
+              ) : null}
+            </div>
+          )}
 
           {/* OS Number */}
           <span className="font-mono text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
@@ -94,6 +112,17 @@ export function OrderCard({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Quick Schedule Button if Pending */}
+          {isPending && onSchedule && (
+            <button
+              onClick={() => onSchedule(order)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-200 transition-colors cursor-pointer"
+            >
+              <CalendarPlus className="w-3.5 h-3.5" />
+              <span>Agendar</span>
+            </button>
+          )}
+
           {/* Status selector */}
           <div className="relative">
             <select
@@ -102,6 +131,7 @@ export function OrderCard({
               onChange={(e) => handleStatusChange(e.target.value as OrderStatus)}
               className="text-xs font-semibold py-1 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-full cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none text-slate-700"
             >
+              <option value="PENDENTE">Pendente</option>
               <option value="AGENDADO">Agendado</option>
               <option value="NA_BANCADA">Na Bancada</option>
               <option value="CONCLUIDO">Concluído</option>
@@ -119,7 +149,7 @@ export function OrderCard({
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
@@ -131,6 +161,18 @@ export function OrderCard({
                   onClick={() => setMenuOpen(false)}
                 />
                 <div className="absolute right-0 mt-1 w-36 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-20">
+                  {onSchedule && (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onSchedule(order);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-xs text-indigo-600 hover:bg-indigo-50 font-medium flex items-center gap-2"
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5" />
+                      {isPending ? "Agendar Reparo" : "Alterar Horário"}
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setMenuOpen(false);
@@ -144,7 +186,11 @@ export function OrderCard({
                   <button
                     onClick={() => {
                       setMenuOpen(false);
-                      if (confirm(`Deseja realmente excluir a ${formatOSNumber(order.id)}?`)) {
+                      if (
+                        confirm(
+                          `Deseja realmente excluir a ${formatOSNumber(order.id)}?`
+                        )
+                      ) {
                         onDelete(order.id);
                       }
                     }}
@@ -212,7 +258,6 @@ export function OrderCard({
           <span className="font-semibold text-slate-800">{order.customerName}</span>
         </div>
       </div>
-
     </div>
   );
 }

@@ -9,9 +9,10 @@ import {
   Smartphone,
   AlertCircle,
   FileText,
-  CheckSquare,
   AlertTriangle,
   Sparkles,
+  CalendarClock,
+  Info,
 } from "lucide-react";
 import { format } from "date-fns";
 import { WorkOrder, OrderStatus } from "@/types";
@@ -41,6 +42,7 @@ export function EditOrderModal({
   const [device, setDevice] = useState("");
   const [issue, setIssue] = useState("");
   const [status, setStatus] = useState<OrderStatus>("AGENDADO");
+  const [isPending, setIsPending] = useState(false);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [estimatedDuration, setEstimatedDuration] = useState("");
@@ -48,14 +50,40 @@ export function EditOrderModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (order) {
+      const orderPending = order.status === "PENDENTE" || !order.scheduledDate;
+      setIsPending(orderPending);
+      setCustomerName(order.customerName);
+      setDevice(order.device);
+      setIssue(order.issue);
+      setStatus(order.status);
+
+      if (order.scheduledDate) {
+        const d = new Date(order.scheduledDate);
+        setDate(format(d, "yyyy-MM-dd"));
+        setTime(format(d, "HH:mm"));
+      } else {
+        setDate(format(new Date(), "yyyy-MM-dd"));
+        setTime("09:00");
+      }
+
+      setEstimatedDuration(
+        order.estimatedDuration ? String(order.estimatedDuration) : ""
+      );
+      setNotes(order.notes || "");
+      setError(null);
+    }
+  }, [order]);
+
   // Overlap detection excluding this order itself
   const conflictingOrders = useMemo(() => {
-    if (!order || !date || !time) return [];
+    if (isPending || !order || !date || !time) return [];
     const start = new Date(`${date}T${time}:00`);
     if (isNaN(start.getTime())) return [];
     const dur = parseInt(estimatedDuration, 10) || 30;
     return findConflictingOrders(start, dur, existingOrders, order.id);
-  }, [order, date, time, estimatedDuration, existingOrders]);
+  }, [isPending, order, date, time, estimatedDuration, existingOrders]);
 
   const nextFreeTime = useMemo(() => {
     if (conflictingOrders.length === 0) return null;
@@ -75,20 +103,25 @@ export function EditOrderModal({
     }
   };
 
-  useEffect(() => {
-    if (order) {
-      const d = new Date(order.scheduledDate);
-      setCustomerName(order.customerName);
-      setDevice(order.device);
-      setIssue(order.issue);
-      setStatus(order.status);
-      setDate(format(d, "yyyy-MM-dd"));
-      setTime(format(d, "HH:mm"));
-      setEstimatedDuration(order.estimatedDuration ? String(order.estimatedDuration) : "");
-      setNotes(order.notes || "");
-      setError(null);
+  const handleTogglePending = (checked: boolean) => {
+    setIsPending(checked);
+    if (checked) {
+      setStatus("PENDENTE");
+    } else {
+      if (status === "PENDENTE") {
+        setStatus("AGENDADO");
+      }
     }
-  }, [order]);
+  };
+
+  const handleStatusChange = (newStatus: OrderStatus) => {
+    setStatus(newStatus);
+    if (newStatus === "PENDENTE") {
+      setIsPending(true);
+    } else if (isPending) {
+      setIsPending(false);
+    }
+  };
 
   if (!isOpen || !order) return null;
 
@@ -96,9 +129,19 @@ export function EditOrderModal({
     e.preventDefault();
     setError(null);
 
+    if (!customerName.trim() || !device.trim() || !issue.trim()) {
+      setError("Por favor, preencha os campos obrigatórios (Cliente, Aparelho e Defeito).");
+      return;
+    }
+
+    if (!isPending && (!date || !time)) {
+      setError("Por favor, informe a data e horário ou marque como pendente.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const scheduledDateTime = new Date(`${date}T${time}:00`);
+      const scheduledDateTime = isPending ? null : new Date(`${date}T${time}:00`);
 
       const res = await fetch(`/api/work-orders/${order.id}`, {
         method: "PATCH",
@@ -108,8 +151,10 @@ export function EditOrderModal({
           device: device.trim(),
           issue: issue.trim(),
           status,
-          scheduledDate: scheduledDateTime.toISOString(),
-          estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : null,
+          scheduledDate: scheduledDateTime ? scheduledDateTime.toISOString() : null,
+          estimatedDuration: estimatedDuration
+            ? parseInt(estimatedDuration, 10)
+            : null,
           notes: notes.trim(),
         }),
       });
@@ -133,7 +178,6 @@ export function EditOrderModal({
       <div className="fixed inset-0" onClick={onClose} />
 
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200 z-10 animate-in fade-in zoom-in-95 duration-150">
-        
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <div>
@@ -143,18 +187,23 @@ export function EditOrderModal({
                 {formatOSNumber(order.id)}
               </span>
             </div>
-            <p className="text-xs text-slate-500">Atualize informações de bancada, status e observações</p>
+            <p className="text-xs text-slate-500">
+              Atualize informações de bancada, status e observações
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 space-y-4 max-h-[80vh] overflow-y-auto"
+        >
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -165,14 +214,15 @@ export function EditOrderModal({
           {/* Status Selection */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Status Atual da Ordem de Serviço
+              Status do Serviço
             </label>
             <div className="relative">
               <select
                 value={status}
-                onChange={(e) => setStatus(e.target.value as OrderStatus)}
+                onChange={(e) => handleStatusChange(e.target.value as OrderStatus)}
                 className="w-full px-3 py-2 text-sm font-semibold border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 text-slate-800"
               >
+                <option value="PENDENTE">Pendente de Agendamento</option>
                 <option value="AGENDADO">Agendado</option>
                 <option value="NA_BANCADA">Na Bancada (Em análise/reparo)</option>
                 <option value="CONCLUIDO">Concluído (Pronto para retirada)</option>
@@ -229,106 +279,152 @@ export function EditOrderModal({
             />
           </div>
 
-          {/* Date and Time */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Data do Agendamento
-              </label>
-              <div className="relative">
-                <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
+          {/* Pending Toggle */}
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`p-2 rounded-lg ${
+                  isPending
+                    ? "bg-purple-100 text-purple-700"
+                    : "bg-indigo-100 text-indigo-700"
+                }`}
+              >
+                <CalendarClock className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-800">
+                  Pendente de agendamento
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {isPending
+                    ? "Sem horário reservado na bancada."
+                    : "Com dia e horário marcados."}
+                </p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Horário Previsto
-              </label>
-              <div className="relative">
-                <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="time"
-                  step="60"
-                  required
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
-              </div>
-            </div>
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={isPending}
+                onChange={(e) => handleTogglePending(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
           </div>
 
-          {/* Overlap / Conflict Alert */}
-          {conflictingOrders.length > 0 && (
-            <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl space-y-2 text-xs animate-in fade-in duration-150">
-              <div className="flex items-start gap-2 text-amber-800 font-semibold">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          {/* Date and Time (only if NOT pending) */}
+          {!isPending ? (
+            <div className="space-y-3 pt-1">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span>⚠️ Conflito de Horário na Bancada!</span>
-                  <p className="text-[11px] font-normal text-amber-700 mt-0.5">
-                    Este horário coincide com outro serviço agendado para o mesmo dia:
-                  </p>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Data do Agendamento
+                  </label>
+                  <div className="relative">
+                    <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="date"
+                      required
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Horário Previsto
+                  </label>
+                  <div className="relative">
+                    <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="time"
+                      step="60"
+                      required
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="space-y-1 pl-6">
-                {conflictingOrders.map((co) => (
-                  <div
-                    key={co.id}
-                    className="text-[11px] text-amber-900 bg-amber-100/70 px-2 py-1 rounded flex items-center justify-between"
-                  >
-                    <span>
-                      <strong className="font-mono">{formatOSNumber(co.id)}</strong> - {co.device}
-                    </span>
-                    <span className="font-semibold text-amber-800">
-                      {formatTimeRange(co.scheduledDate, co.estimatedDuration)}
-                    </span>
+
+              {/* Overlap / Conflict Alert */}
+              {conflictingOrders.length > 0 && (
+                <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl space-y-2 text-xs animate-in fade-in duration-150">
+                  <div className="flex items-start gap-2 text-amber-800 font-semibold">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span>⚠️ Conflito de Horário na Bancada!</span>
+                      <p className="text-[11px] font-normal text-amber-700 mt-0.5">
+                        Este horário coincide com outro serviço agendado para o mesmo dia:
+                      </p>
+                    </div>
                   </div>
-                ))}
-              </div>
-              {nextFreeTime && (
-                <div className="pt-1 pl-6">
-                  <button
-                    type="button"
-                    onClick={handleApplyNextFreeTime}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white rounded-lg font-bold text-xs shadow-xs transition-colors cursor-pointer"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Evitar sobreposição: Ajustar para às {nextFreeTime}</span>
-                  </button>
+                  <div className="space-y-1 pl-6">
+                    {conflictingOrders.map((co) => (
+                      <div
+                        key={co.id}
+                        className="text-[11px] text-amber-900 bg-amber-100/70 px-2 py-1 rounded flex items-center justify-between"
+                      >
+                        <span>
+                          <strong className="font-mono">{formatOSNumber(co.id)}</strong> - {co.device}
+                        </span>
+                        <span className="font-semibold text-amber-800">
+                          {formatTimeRange(co.scheduledDate, co.estimatedDuration)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {nextFreeTime && (
+                    <div className="pt-1 pl-6">
+                      <button
+                        type="button"
+                        onClick={handleApplyNextFreeTime}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white rounded-lg font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Evitar sobreposição: Ajustar para às {nextFreeTime}</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
+
+              {/* Quick Time Presets */}
+              <div>
+                <span className="block text-[11px] font-medium text-slate-500 mb-1">
+                  Horários comuns de bancada:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {["08:30", "09:00", "10:00", "11:00", "13:30", "14:00", "15:30", "16:30"].map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTime(t)}
+                      className={`px-2 py-0.5 text-xs rounded border transition-colors cursor-pointer ${
+                        time === t
+                          ? "bg-indigo-600 text-white border-indigo-600 font-semibold"
+                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 bg-purple-50/80 border border-purple-200 rounded-xl text-xs text-purple-900 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                Esta O.S. está definida como <strong>Pendente de Agendamento</strong>. Ela não aparecerá com horário na agenda diária até que uma data seja selecionada.
+              </p>
             </div>
           )}
-
-          {/* Quick Time Presets */}
-          <div>
-            <span className="block text-[11px] font-medium text-slate-500 mb-1">
-              Horários comuns de bancada:
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {["08:30", "09:00", "10:00", "11:00", "13:30", "14:00", "15:30", "16:30"].map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTime(t)}
-                  className={`px-2 py-0.5 text-xs rounded border transition-colors cursor-pointer ${
-                    time === t
-                      ? "bg-indigo-600 text-white border-indigo-600 font-semibold"
-                      : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Estimated Duration */}
           <div>
@@ -340,8 +436,7 @@ export function EditOrderModal({
                 {estimatedDuration ? `${estimatedDuration} min previstos` : "Não definido"}
               </span>
             </div>
-            
-            {/* Quick chips */}
+
             <div className="flex flex-wrap gap-1.5 mb-2">
               {[
                 { label: "15 min", val: "15" },
@@ -358,7 +453,9 @@ export function EditOrderModal({
                   onClick={() => setEstimatedDuration(chip.val)}
                   className={`px-2.5 py-1 text-xs rounded-md border font-medium transition-colors cursor-pointer ${
                     estimatedDuration === chip.val
-                      ? "bg-indigo-600 text-white border-indigo-600 font-semibold"
+                      ? isPending
+                        ? "bg-purple-600 text-white border-purple-600 font-semibold"
+                        : "bg-indigo-600 text-white border-indigo-600 font-semibold"
                       : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
@@ -373,7 +470,7 @@ export function EditOrderModal({
                 type="number"
                 min="1"
                 step="1"
-                placeholder="Ou digite qualquer valor em minutos (ex: 75)"
+                placeholder="Ex: 45 (minutos)"
                 value={estimatedDuration}
                 onChange={(e) => setEstimatedDuration(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -381,15 +478,16 @@ export function EditOrderModal({
             </div>
           </div>
 
-          {/* Technical notes */}
+          {/* Notes */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Observações / Laudo Técnico
+              Observações Internas (opcional)
             </label>
             <div className="relative">
               <FileText className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <textarea
                 rows={2}
+                placeholder="Ex: Aguardando aprovação do orçamento ou peça chegar..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
@@ -409,13 +507,16 @@ export function EditOrderModal({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer"
+              className={`px-5 py-2 text-xs sm:text-sm font-semibold text-white disabled:opacity-50 rounded-lg shadow-sm transition-all cursor-pointer ${
+                isPending
+                  ? "bg-purple-600 hover:bg-purple-700"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
             >
               {loading ? "Salvando..." : "Salvar Alterações"}
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );

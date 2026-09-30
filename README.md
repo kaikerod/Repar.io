@@ -26,8 +26,15 @@ Aplicativo pessoal para técnicos de assistência técnica acompanharem seus **r
   - Numeração sequencial automática (ex: `OS #0001`, `OS #0002`).
   - Aparelho/modelo e descrição detalhada do defeito relatado.
   - Observações e laudos técnicos internos.
+- ⏳ **Fila de O.S. Pendentes de Agendamento**:
+  - Cadastro ágil de Ordens de Serviço sem data/horário marcado (ex: aparelho recém-entregue pelo cliente, aguardando peça ou orçamento).
+  - Aba e contador exclusivo no topo com destaque visual em tom roxo/violeta.
+  - Notificação inteligente na Agenda Diária e no Calendário avisando sobre reparos que aguardam agendamento.
+  - Ação rápida **"Agendar Reparo"** com verificação instantânea de conflitos e sugestão de próximo horário vago.
+  - Transição automática e reversível entre `Pendente de Agendamento` e `Agendado`.
 - 🔄 **Controle de Status da Bancada**:
   - Alternância rápida com 1 clique:
+    - 🟣 `Pendente de Agendamento`
     - 🔵 `Agendado`
     - 🟡 `Na Bancada` (em teste / manutenção)
     - 🟢 `Concluído` (pronto para retirada)
