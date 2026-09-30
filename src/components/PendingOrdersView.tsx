@@ -123,7 +123,11 @@ export function PendingOrdersView({
                       <span className="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-100">
                         {formatOSNumber(order.id)}
                       </span>
-                      <StatusBadge status="PENDENTE" size="sm" />
+                      <StatusBadge
+                        status={order.status}
+                        size="sm"
+                        onChange={(newStatus) => onUpdateStatus(order.id, newStatus)}
+                      />
                       {order.estimatedDuration ? (
                         <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
                           ~{formatDuration(order.estimatedDuration)}
@@ -137,7 +141,8 @@ export function PendingOrdersView({
                         onClick={() =>
                           setActiveMenuId(activeMenuId === order.id ? null : order.id)
                         }
-                        className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                        className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                        title="Mais opções"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -152,19 +157,9 @@ export function PendingOrdersView({
                             <button
                               onClick={() => {
                                 setActiveMenuId(null);
-                                onSchedule(order);
-                              }}
-                              className="w-full text-left px-3 py-1.5 text-xs text-indigo-600 hover:bg-indigo-50 font-medium flex items-center gap-2"
-                            >
-                              <CalendarPlus className="w-3.5 h-3.5" />
-                              Agendar Reparo
-                            </button>
-                            <button
-                              onClick={() => {
-                                setActiveMenuId(null);
                                 onEdit(order);
                               }}
-                              className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                              className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
                             >
                               <Edit2 className="w-3.5 h-3.5 text-slate-500" />
                               Editar O.S.
@@ -182,7 +177,7 @@ export function PendingOrdersView({
                                   onDelete(order.id);
                                 }
                               }}
-                              className="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              className="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5 text-red-500" />
                               Excluir

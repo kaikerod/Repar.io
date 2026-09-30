@@ -123,33 +123,20 @@ export function OrderCard({
             </button>
           )}
 
-          {/* Status selector */}
-          <div className="relative">
-            <select
-              value={order.status}
-              disabled={isUpdating}
-              onChange={(e) => handleStatusChange(e.target.value as OrderStatus)}
-              className="text-xs font-semibold py-1 pl-2.5 pr-6 bg-slate-50 border border-slate-200 rounded-full cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none text-slate-700"
-            >
-              <option value="PENDENTE">Pendente</option>
-              <option value="AGENDADO">Agendado</option>
-              <option value="NA_BANCADA">Na Bancada</option>
-              <option value="CONCLUIDO">Concluído</option>
-              <option value="ENTREGUE">Entregue</option>
-              <option value="CANCELADO">Cancelado</option>
-            </select>
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              ▼
-            </div>
-          </div>
-
-          <StatusBadge status={order.status} size="sm" />
+          {/* Unified Interactive Status Badge */}
+          <StatusBadge
+            status={order.status}
+            size="sm"
+            disabled={isUpdating}
+            onChange={handleStatusChange}
+          />
 
           {/* Action button menu */}
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-1 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              title="Mais opções"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
@@ -161,24 +148,12 @@ export function OrderCard({
                   onClick={() => setMenuOpen(false)}
                 />
                 <div className="absolute right-0 mt-1 w-36 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-20">
-                  {onSchedule && (
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onSchedule(order);
-                      }}
-                      className="w-full text-left px-3 py-1.5 text-xs text-indigo-600 hover:bg-indigo-50 font-medium flex items-center gap-2"
-                    >
-                      <CalendarPlus className="w-3.5 h-3.5" />
-                      {isPending ? "Agendar Reparo" : "Alterar Horário"}
-                    </button>
-                  )}
                   <button
                     onClick={() => {
                       setMenuOpen(false);
                       onEdit(order);
                     }}
-                    className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
                   >
                     <Edit2 className="w-3.5 h-3.5 text-slate-500" />
                     Editar O.S.
@@ -194,7 +169,7 @@ export function OrderCard({
                         onDelete(order.id);
                       }
                     }}
-                    className="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2"
+                    className="w-full text-left px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5 text-red-500" />
                     Excluir
