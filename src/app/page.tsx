@@ -168,6 +168,16 @@ export default function Home() {
     );
   }, [searchedOrders, activeStatusFilter]);
 
+  // Orders for current date period before status filter (for metrics calculation)
+  const periodOrders = useMemo(() => {
+    if (viewMode === "agenda" && selectedDate) {
+      return searchedOrders.filter(
+        (o) => o.scheduledDate && isSameDay(new Date(o.scheduledDate), selectedDate)
+      );
+    }
+    return searchedOrders;
+  }, [searchedOrders, viewMode, selectedDate]);
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50/80">
       {/* Navbar with brand, search and + Nova O.S. */}
@@ -255,18 +265,28 @@ export default function Home() {
 
         {/* Top Summary Metrics */}
         <MetricsBar
-          orders={viewMode === "agenda" && selectedDate ? agendaOrders : allOrders}
+          orders={periodOrders}
           pendingCount={pendingCount}
-          activeFilter={activeStatusFilter}
+          activeFilter={viewMode === "pending" ? "PENDENTE" : activeStatusFilter}
           onSelectFilter={(status) => {
             if (status === "PENDENTE") {
-              setViewMode("pending");
-              setActiveStatusFilter(null);
-            } else {
-              setActiveStatusFilter((prev) => (prev === status ? null : status));
-              if (viewMode === "pending" && status !== null) {
+              if (viewMode === "pending") {
+                setViewMode("agenda");
+                setActiveStatusFilter(null);
+              } else {
+                setViewMode("pending");
+                setActiveStatusFilter(null);
+              }
+            } else if (status === null) {
+              if (viewMode === "pending") {
                 setViewMode("agenda");
               }
+              setActiveStatusFilter(null);
+            } else {
+              if (viewMode === "pending") {
+                setViewMode("agenda");
+              }
+              setActiveStatusFilter((prev) => (prev === status ? null : status));
             }
           }}
         />
