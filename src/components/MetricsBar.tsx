@@ -32,7 +32,7 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter, pendingCount 
       count: countByStatus.total,
       icon: Layers,
       color: "text-slate-700 bg-slate-100 border-slate-200",
-      activeColor: "ring-2 ring-slate-800 bg-slate-100",
+      activeColor: "ring-2 ring-slate-800 bg-slate-100 border-slate-300",
     },
     {
       id: "PENDENTE" as OrderStatus,
@@ -40,7 +40,7 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter, pendingCount 
       count: countByStatus.pendente,
       icon: CalendarClock,
       color: "text-purple-700 bg-purple-50 border-purple-200",
-      activeColor: "ring-2 ring-purple-600 bg-purple-50",
+      activeColor: "ring-2 ring-purple-600 bg-purple-50 border-purple-200",
     },
     {
       id: "AGENDADO" as OrderStatus,
@@ -48,7 +48,7 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter, pendingCount 
       count: countByStatus.agendado,
       icon: Calendar,
       color: "text-blue-700 bg-blue-50 border-blue-200",
-      activeColor: "ring-2 ring-blue-600 bg-blue-50",
+      activeColor: "ring-2 ring-blue-600 bg-blue-50 border-blue-200",
     },
     {
       id: "NA_BANCADA" as OrderStatus,
@@ -56,7 +56,7 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter, pendingCount 
       count: countByStatus.naBancada,
       icon: Cpu,
       color: "text-amber-700 bg-amber-50 border-amber-200",
-      activeColor: "ring-2 ring-amber-500 bg-amber-50",
+      activeColor: "ring-2 ring-amber-500 bg-amber-50 border-amber-200",
     },
     {
       id: "CONCLUIDO" as OrderStatus,
@@ -64,7 +64,7 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter, pendingCount 
       count: countByStatus.concluido,
       icon: CheckCircle2,
       color: "text-emerald-700 bg-emerald-50 border-emerald-200",
-      activeColor: "ring-2 ring-emerald-600 bg-emerald-50",
+      activeColor: "ring-2 ring-emerald-600 bg-emerald-50 border-emerald-200",
     },
   ];
 
@@ -78,8 +78,8 @@ export function MetricsBar({ orders, activeFilter, onSelectFilter, pendingCount 
           <button
             key={item.label}
             onClick={() => onSelectFilter(item.id)}
-            className={`flex items-center justify-between p-3.5 rounded-xl border bg-white text-left transition-all hover:shadow-sm cursor-pointer ${
-              isActive ? item.activeColor : "border-slate-200 hover:border-slate-300"
+            className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all hover:shadow-sm cursor-pointer ${
+              isActive ? item.activeColor : "bg-white border-slate-200 hover:border-slate-300"
             }`}
           >
             <div>
