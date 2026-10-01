@@ -61,7 +61,10 @@ export async function PATCH(
     });
 
     return NextResponse.json(updated);
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      return NextResponse.json({ error: "Ordem de serviço não encontrada" }, { status: 404 });
+    }
     console.error("Error updating order:", error);
     return NextResponse.json({ error: "Erro ao atualizar ordem de serviço" }, { status: 500 });
   }
@@ -80,7 +83,11 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      // Já não existe, considerar sucesso idempotente
+      return NextResponse.json({ success: true });
+    }
     console.error("Error deleting order:", error);
     return NextResponse.json({ error: "Erro ao remover ordem" }, { status: 500 });
   }
